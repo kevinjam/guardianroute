@@ -50,7 +50,7 @@ Future<void> _connectFirebaseEmulators(String host) async {
   appLogger.i('Connecting Firebase emulators at $host');
   await FirebaseAuth.instance.useAuthEmulator(host, 9099);
   FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
-  FirebaseFunctions.instance.useFunctionsEmulator(host, 5001);
+  FirebaseFunctions.instanceFor(region: 'europe-west1').useFunctionsEmulator(host, 5001);
   await FirebaseStorage.instance.useStorageEmulator(host, 9199);
 }
 

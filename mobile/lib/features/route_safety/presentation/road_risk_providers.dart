@@ -72,7 +72,7 @@ final riskOverlayEnabledProvider =
     NotifierProvider<RiskOverlayNotifier, bool>(RiskOverlayNotifier.new);
 
 Future<Map<String, dynamic>> runRoadRiskRecalculation() async {
-  final result = await FirebaseFunctions.instance
+  final result = await FirebaseFunctions.instanceFor(region: 'europe-west1')
       .httpsCallable('runRoadRiskRecalculation')
       .call();
   return Map<String, dynamic>.from(result.data as Map);

@@ -18,7 +18,8 @@ export async function analyzeHazardMedia(input: {
   heading?: number;
   speed?: number;
 }): Promise<HazardAnalysis> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const rawKey = (process.env.GEMINI_API_KEY ?? "").trim();
+  const apiKey = !rawKey || rawKey.startsWith("PASTE_YOUR_") || rawKey.startsWith("YOUR_") ? "" : rawKey;
   if (!apiKey) {
     return fallbackAnalysis(input.transcript);
   }

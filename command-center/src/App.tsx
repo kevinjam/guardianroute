@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { auth, fetchDashboardMetrics, signOutUser } from "./firebase";
+import {
+  auth,
+  fetchDashboardMetrics,
+  seedFirestoreDemoData,
+  signOutUser,
+} from "./firebase";
 import { LoginScreen } from "./components/LoginScreen";
 import { CommandMap } from "./components/CommandMap";
 import { StatsPanel } from "./components/StatsPanel";
 import { HazardLists } from "./components/HazardLists";
 import {
+  computeClientMetrics,
   useLiveHazards,
   useLivePulses,
   useLiveRoadRisk,
@@ -16,8 +22,10 @@ import { demoOverlayEnabled } from "./config";
 
 export default function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [demoOperator, setDemoOperator] = useState(false);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const { hazards, loading: hazardsLoading } = useLiveHazards();
   const pulses = useLivePulses();
@@ -25,7 +33,10 @@ export default function App() {
   const resolved = useRecentResolvedHazards();
 
   useEffect(() => {
-    return onAuthStateChanged(auth, setUser);
+    return onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (u) setDemoOperator(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -60,8 +71,23 @@ export default function App() {
     return <div className="app-loading">Loading…</div>;
   }
 
-  if (!user) {
-    return <LoginScreen />;
+  if (!user && !demoOperator) {
+    return <LoginScreen onDemoLogin={() => setDemoOperator(true)} />;
+  }
+
+  const effectiveMetrics =
+    metrics ?? computeClientMetrics(hazards, resolved, pulses, segments);
+
+  async function handleSeed() {
+    if (!user) return;
+    setSeeding(true);
+    try {
+      await seedFirestoreDemoData();
+    } catch {
+      // Ignore if rules/auth not ready
+    } finally {
+      setSeeding(false);
+    }
   }
 
   return (
@@ -73,10 +99,31 @@ export default function App() {
         </div>
         <div className="top-actions">
           {demoOverlayEnabled() && hazards.some((h) => h.isDemo) && (
-            <span className="demo-pill">Demo overlay</span>
+            <span className="demo-pill">Spark / Demo overlay</span>
           )}
-          <span className="user-email">{user.email ?? user.uid}</span>
-          <button type="button" className="btn-ghost" onClick={() => signOutUser()}>
+          {user && hazards.some((h) => h.isDemo) && (
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={handleSeed}
+              disabled={seeding}
+            >
+              {seeding ? "Seeding…" : "Seed Live Firestore"}
+            </button>
+          )}
+          <span className="user-email">
+            {user
+              ? user.email ?? (user.isAnonymous ? "Guest Operator" : user.uid)
+              : "Demo Operator"}
+          </span>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              setDemoOperator(false);
+              if (user) void signOutUser();
+            }}
+          >
             Sign out
           </button>
         </div>
@@ -89,7 +136,7 @@ export default function App() {
         </div>
         <div className="side-column">
           <StatsPanel
-            metrics={metrics}
+            metrics={effectiveMetrics}
             metricsLoading={metricsLoading}
             liveActiveCount={hazards.length}
             pulseCount={pulses.length}
@@ -99,8 +146,8 @@ export default function App() {
       </main>
 
       <footer className="footer-note">
-        Live map · hazards · Guardian Pulse™ · road risk · server analytics (sensor
-        events via Cloud Functions only).
+        Live map · hazards · Guardian Pulse™ · road risk · Firebase Spark
+        (Firestore + Auth + Hosting).
       </footer>
     </div>
   );

@@ -10,7 +10,8 @@ export function useEmulators(): boolean {
 }
 
 export function mapsApiKey(): string {
-  return import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
+  const raw = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "").trim();
+  return !raw || raw.startsWith("PASTE_YOUR_") || raw.startsWith("YOUR_") ? "" : raw;
 }
 
 export function firebaseConfig() {

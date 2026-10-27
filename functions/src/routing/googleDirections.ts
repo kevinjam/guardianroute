@@ -23,7 +23,8 @@ export async function fetchGoogleDirections(
   destLat: number,
   destLng: number,
 ): Promise<DirectionsRoute[]> {
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.DIRECTIONS_API_KEY;
+  const rawKey = (process.env.GOOGLE_MAPS_API_KEY ?? process.env.DIRECTIONS_API_KEY ?? "").trim();
+  const apiKey = !rawKey || rawKey.startsWith("PASTE_YOUR_") || rawKey.startsWith("YOUR_") ? "" : rawKey;
   if (!apiKey) {
     return [];
   }

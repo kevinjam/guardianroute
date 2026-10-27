@@ -55,6 +55,6 @@ final selectedPulseProvider =
 
 Future<Map<String, dynamic>> runGuardianPulseScan() async {
   final result =
-      await FirebaseFunctions.instance.httpsCallable('runGuardianPulseNow').call();
+      await FirebaseFunctions.instanceFor(region: 'europe-west1').httpsCallable('runGuardianPulseNow').call();
   return Map<String, dynamic>.from(result.data as Map);
 }

@@ -76,20 +76,6 @@
       ]
     },
     {
-      "collectionGroup": "sensorEvents",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "timestamp", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "roadSegments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "riskScore", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "hazards",
       "queryScope": "COLLECTION",
       "fields": [

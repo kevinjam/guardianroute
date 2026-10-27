@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,13 +11,17 @@ class AuthRepository {
     FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
     FirebaseFunctions? functions,
+    FirebaseFirestore? firestore,
   })  : _auth = firebaseAuth ?? FirebaseAuth.instance,
         _googleSignIn = googleSignIn ?? GoogleSignIn.instance,
-        _functions = functions ?? FirebaseFunctions.instance;
+        _functions =
+            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
   final FirebaseFunctions _functions;
+  final FirebaseFirestore _firestore;
 
   Stream<AppUser?> authStateChanges() {
     return _auth.authStateChanges().map(_mapUser);
@@ -81,8 +86,26 @@ class AuthRepository {
   Future<void> _ensureUserProfile() async {
     try {
       await _functions.httpsCallable('ensureUserProfile').call();
-    } catch (e, st) {
-      appLogger.w('ensureUserProfile failed: $e\n$st');
+    } catch (_) {
+      try {
+        final user = _auth.currentUser;
+        if (user == null) return;
+        final ref = _firestore.collection('users').doc(user.uid);
+        final snap = await ref.get();
+        if (!snap.exists) {
+          await ref.set({
+            'displayName': user.displayName ?? user.email ?? 'Rider',
+            'createdAt': FieldValue.serverTimestamp(),
+            'lastActiveAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          await ref.update({
+            'lastActiveAt': FieldValue.serverTimestamp(),
+          });
+        }
+      } catch (e, st) {
+        appLogger.w('Fallback user profile write failed: $e\n$st');
+      }
     }
   }
 }

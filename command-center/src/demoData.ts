@@ -1,4 +1,4 @@
-import type { HazardRecord } from "./types";
+import type { HazardRecord, PulseRecord, RoadSegmentRecord } from "./types";
 import { KAMPALA_CENTER } from "./config";
 
 export function kampalaDemoHazards(): HazardRecord[] {
@@ -36,6 +36,41 @@ export function kampalaDemoHazards(): HazardRecord[] {
       location: { lat: lat + 0.004, lng: lng - 0.015 },
       description: "Poor visibility and heavy merging traffic.",
       isDemo: true,
+    },
+  ];
+}
+
+export function kampalaDemoPulses(): PulseRecord[] {
+  const { lat, lng } = KAMPALA_CENTER;
+  return [
+    {
+      id: "demo-pulse-1",
+      status: "EMERGING",
+      confidence: 0.86,
+      eventCount: 38,
+      dominantEventType: "VERTICAL_SHOCK",
+      location: { lat: lat + 0.007, lng: lng + 0.01 },
+      radiusMeters: 140,
+    },
+  ];
+}
+
+export function kampalaDemoRoadSegments(): RoadSegmentRecord[] {
+  const { lat, lng } = KAMPALA_CENTER;
+  return [
+    {
+      id: "demo-seg-high",
+      geohash: "s8p1x9k",
+      riskScore: 78,
+      riskLevel: "HIGH",
+      location: { lat: lat + 0.008, lng: lng + 0.012 },
+    },
+    {
+      id: "demo-seg-mod",
+      geohash: "s8p1x2m",
+      riskScore: 44,
+      riskLevel: "MODERATE",
+      location: { lat: lat - 0.005, lng: lng - 0.008 },
     },
   ];
 }

@@ -25,34 +25,23 @@ service cloud.firestore {
     }
 
     match /hazardReports/{reportId} {
-      allow read: if isSignedIn()
-        && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn();
       allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == 'PENDING'
-        && request.resource.data.imageStoragePath is string
-        && request.resource.data.location is latlng
-        && request.resource.data.keys().hasOnly([
-          'userId',
-          'status',
-          'location',
-          'imageStoragePath',
-          'audioStoragePath',
-          'transcript',
-          'heading',
-          'speed',
-          'createdAt'
-        ]);
-      allow update, delete: if false;
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+      allow delete: if false;
     }
 
     match /hazards/{hazardId} {
       allow read: if isSignedIn();
-      allow write: if false;
+      allow create, update: if isSignedIn();
+      allow delete: if false;
 
       match /reports/{reportId} {
         allow read: if isSignedIn();
-        allow write: if false;
+        allow create: if isSignedIn();
+        allow update, delete: if false;
       }
 
       match /confirmations/{confirmationId} {
@@ -64,28 +53,30 @@ service cloud.firestore {
     }
 
     match /sensorEvents/{eventId} {
-      allow read: if false;
-      allow write: if false;
+      allow read, create: if isSignedIn();
+      allow update, delete: if false;
     }
 
     match /roadSegments/{segmentId} {
-      allow read: if isSignedIn();
-      allow write: if false;
+      allow read, create, update: if isSignedIn();
+      allow delete: if false;
     }
 
     match /routeAssessments/{assessmentId} {
       allow read: if isSignedIn()
         && resource.data.userId == request.auth.uid;
-      allow write: if false;
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     match /guardianPulseEvents/{pulseId} {
-      allow read: if isSignedIn();
-      allow write: if false;
+      allow read, create, update: if isSignedIn();
+      allow delete: if false;
     }
 
     match /config/{docId} {
-      allow read: if false;
+      allow read: if isSignedIn();
       allow write: if false;
     }
   }

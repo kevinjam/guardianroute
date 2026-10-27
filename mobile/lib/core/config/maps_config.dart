@@ -5,8 +5,9 @@
 abstract final class MapsConfig {
   static const apiKey = String.fromEnvironment(
     'GOOGLE_MAPS_API_KEY',
-    defaultValue: '',
+    defaultValue: 'AIzaSyAs0_6rqdueGA5KSuHqQ8y-caG3Aota680',
   );
 
-  static bool get hasPlacesApiKey => apiKey.isNotEmpty;
+  static bool get hasPlacesApiKey =>
+      apiKey.isNotEmpty && !apiKey.startsWith('PASTE_YOUR_') && !apiKey.startsWith('YOUR_');
 }
