@@ -28,26 +28,30 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     refreshListenable: refresh,
     redirect: (context, state) {
-      final isSplash = state.matchedLocation == '/splash';
-      if (isSplash) return null;
+      final location = state.matchedLocation;
+      if (location == '/splash') return null;
+
+      if (authState.isLoading) return null;
 
       final user = authState.value;
-      final authLoading = authState.isLoading;
+      final isAuthRoute = location == '/auth';
+      final isOnboarding = location == '/onboarding';
 
-      if (authLoading) return null;
-
-      if (!onboardingComplete && state.matchedLocation != '/onboarding') {
-        return '/onboarding';
+      // Finish onboarding before map/auth (even when already signed in).
+      if (!onboardingComplete) {
+        if (!isOnboarding) return '/onboarding';
+        return null;
       }
 
-      final isAuthRoute = state.matchedLocation == '/auth';
-      final isOnboarding = state.matchedLocation == '/onboarding';
+      if (isOnboarding) {
+        return user != null ? '/map' : '/auth';
+      }
 
-      if (user == null && !isAuthRoute && !isOnboarding) {
+      if (user == null && !isAuthRoute) {
         return '/auth';
       }
 
-      if (user != null && (isAuthRoute || isOnboarding)) {
+      if (user != null && isAuthRoute) {
         return '/map';
       }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:guardianroute/features/authentication/presentation/auth_controller.dart';
 import 'package:guardianroute/features/onboarding/presentation/onboarding_preferences.dart';
 
 class OnboardingScreen extends ConsumerWidget {
@@ -36,9 +37,9 @@ class OnboardingScreen extends ConsumerWidget {
               FilledButton(
                 onPressed: () async {
                   await markOnboardingComplete(ref);
-                  if (context.mounted) {
-                    context.go('/auth');
-                  }
+                  if (!context.mounted) return;
+                  final signedIn = ref.read(authStateProvider).value != null;
+                  context.go(signedIn ? '/map' : '/auth');
                 },
                 child: const Text('Get started'),
               ),
