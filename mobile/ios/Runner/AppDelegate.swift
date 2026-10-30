@@ -12,6 +12,12 @@ import UIKit
        !apiKey.isEmpty,
        !apiKey.hasPrefix("$(") {
       GMSServices.provideAPIKey(apiKey)
+    } else {
+      #if DEBUG
+      NSLog(
+        "GuardianRoute: GMSApiKey missing. Copy ios/Flutter/MapsKeys.xcconfig.example to MapsKeys.xcconfig and set MAPS_API_KEY."
+      )
+      #endif
     }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

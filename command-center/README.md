@@ -1,6 +1,8 @@
-# GuardianRoute Command Centre (Phase 9)
+# GuardianRoute — Command Centre
 
-Web dashboard for hackathon demos: **live map**, **hazards**, **Guardian Pulse™**, **road risk**, and **server-side analytics** (including sensor events not exposed in Firestore client rules).
+Web dashboard for **Pre-DevFest Hackathon Kampala 2026** demos: **live map**, **hazards**, **Guardian Pulse™**, **road risk**, and **server-side analytics** (including sensor events not exposed in Firestore client rules).
+
+Project overview and emulator workflow: **[../README.md](../README.md)**.
 
 ## Stack
 
@@ -18,9 +20,9 @@ Web dashboard for hackathon demos: **live map**, **hazards**, **Guardian Pulse�
    cp .env.example .env
    ```
 
-2. Fill `.env` from Firebase console → Project settings → **Your apps** → Web app config (create a web app if needed). Use the same project as the Flutter app.
+2. Fill `.env` from Firebase console → Project settings → **Your apps** → Web app config (create a web app if needed). Use the same Firebase project as the Flutter app (`guardianangel-30dd6` for team dev).
 
-3. Set `VITE_GOOGLE_MAPS_API_KEY` with **Maps JavaScript API** enabled (separate or shared browser key).
+3. Set `VITE_GOOGLE_MAPS_API_KEY` with **Maps JavaScript API** enabled.
 
 4. Install and run:
 
@@ -31,11 +33,11 @@ Web dashboard for hackathon demos: **live map**, **hazards**, **Guardian Pulse�
 
 5. Sign in with Google (same Firebase Auth as mobile). Firestore rules require authentication to read hazards, pulses, and road segments.
 
-### Emulators
+### Emulators (recommended for hackathon prep)
 
 ```bash
 # Terminal 1 (repo root)
-firebase emulators:start
+firebase emulators:start --import=./firebase/emulator-data --export-on-exit
 
 # Terminal 2
 cd command-center
@@ -51,7 +53,7 @@ cd ..
 firebase deploy --only hosting
 ```
 
-Deploy **Functions** first so `getCommandCentreMetrics` is available:
+Deploy **Functions** first so `getCommandCentreMetrics` is available (requires Blaze):
 
 ```bash
 cd functions && npm run build && cd ..

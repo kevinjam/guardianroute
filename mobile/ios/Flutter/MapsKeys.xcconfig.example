@@ -1,0 +1,2 @@
+// Copy to MapsKeys.xcconfig and set your iOS Maps SDK key (Maps SDK for iOS enabled in Google Cloud).
+MAPS_API_KEY=your_ios_maps_sdk_key_here

@@ -31,7 +31,7 @@ Future<void> bootstrap(AppConfig config) async {
   await _configureAppCheck(config);
   await _configureCrashlytics();
   await _configureRemoteConfig();
-  await _configureFirestore();
+  await _configureFirestore(config);
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -119,8 +119,8 @@ Future<void> _configureRemoteConfig() async {
   }
 }
 
-Future<void> _configureFirestore() async {
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
+Future<void> _configureFirestore(AppConfig config) async {
+  FirebaseFirestore.instance.settings = Settings(
+    persistenceEnabled: !config.useFirebaseEmulators,
   );
 }

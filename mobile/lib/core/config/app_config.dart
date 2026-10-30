@@ -1,17 +1,32 @@
+import 'package:flutter/foundation.dart';
 import 'package:guardianroute/core/config/app_flavor.dart';
 
 class AppConfig {
   const AppConfig({
     required this.flavor,
     required this.useFirebaseEmulators,
-    this.emulatorHost = '10.0.2.2',
+    this.emulatorHost = '127.0.0.1',
   });
 
   final AppFlavor flavor;
   final bool useFirebaseEmulators;
 
-  /// Android emulator loopback to host machine.
+  /// Host for Firebase emulators (Auth/Firestore/Functions/Storage).
   final String emulatorHost;
+
+  /// Android emulator → host machine. iOS Simulator / desktop → loopback.
+  static String defaultEmulatorHost() {
+    if (kIsWeb) return 'localhost';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return '127.0.0.1';
+      case TargetPlatform.android:
+        return '10.0.2.2';
+      default:
+        return '127.0.0.1';
+    }
+  }
 
   static AppConfig fromEnvironment() {
     const flavorName = String.fromEnvironment(
@@ -22,15 +37,14 @@ class AppConfig {
       'USE_FIREBASE_EMULATORS',
       defaultValue: false,
     );
-    const host = String.fromEnvironment(
-      'FIREBASE_EMULATOR_HOST',
-      defaultValue: '10.0.2.2',
-    );
+    const hostOverride = String.fromEnvironment('FIREBASE_EMULATOR_HOST');
 
     return AppConfig(
       flavor: AppFlavor.fromName(flavorName),
       useFirebaseEmulators: useEmulators,
-      emulatorHost: host,
+      emulatorHost: hostOverride.isNotEmpty
+          ? hostOverride
+          : defaultEmulatorHost(),
     );
   }
 }

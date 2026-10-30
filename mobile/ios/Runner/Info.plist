@@ -61,6 +61,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>GuardianRoute needs the camera to photograph road hazards.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>GuardianRoute can attach a photo from your library when reporting a hazard.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>GuardianRoute can record a short voice note with your hazard report.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

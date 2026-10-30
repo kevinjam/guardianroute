@@ -1,17 +1,80 @@
-# guardianroute
+# GuardianRoute — Mobile app
 
-A new Flutter project.
+Flutter client for **Pre-DevFest Hackathon Kampala 2026**. Product overview, demo script, and repo layout: **[../README.md](../README.md)**.
 
-## Getting Started
+## Flavors
 
-This project is a starting point for a Flutter application.
+| Flavor | Use |
+|--------|-----|
+| `development` | Daily dev + Firebase emulators |
+| `demo` | Stable demo builds |
+| `production` | Release-style config |
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter run --flavor development --dart-define=FLAVOR=development
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+iOS uses Xcode schemes `development`, `demo`, `production` (same names).
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Firebase emulators
+
+From repo root, start emulators first (see root README). Then:
+
+```bash
+flutter run --flavor development \
+  --dart-define=FLAVOR=development \
+  --dart-define=USE_FIREBASE_EMULATORS=true \
+  --dart-define=GOOGLE_MAPS_API_KEY=your_places_key
+```
+
+Emulator host defaults: **Android emulator** → `10.0.2.2`; **iOS / macOS** → `127.0.0.1`. Override with `--dart-define=FIREBASE_EMULATOR_HOST=...`.
+
+Firestore persistence is **off** when emulators are enabled (see `lib/app/bootstrap.dart`).
+
+## Google Maps keys
+
+| Platform | Config |
+|----------|--------|
+| Android | `android/local.properties` → `MAPS_API_KEY=` |
+| iOS | `ios/Flutter/MapsKeys.xcconfig` (copy from `MapsKeys.xcconfig.example`; gitignored) |
+| Dart (Places, etc.) | `--dart-define=GOOGLE_MAPS_API_KEY=...` on `flutter run` |
+
+Enable **Maps SDK for Android**, **Maps SDK for iOS**, and **Places API** (and related) in Google Cloud for the same project as Firebase.
+
+After editing **iOS** `MapsKeys.xcconfig` or `Debug.xcconfig` / `Release.xcconfig`:
+
+```bash
+flutter clean && flutter pub get
+```
+
+Then run again (not hot reload). More: [docs/architecture/GOOGLE_MAPS.md](../docs/architecture/GOOGLE_MAPS.md).
+
+## Firebase project wiring
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure   # select guardianangel-30dd6 or your team project
+```
+
+CocoaPods / iOS notes: [docs/mobile/FIREBASE_PROJECT.md](../docs/mobile/FIREBASE_PROJECT.md).
+
+## App icon
+
+Source: `assets/branding/app_icon.png`. Regenerate platform icons:
+
+```bash
+dart run flutter_launcher_icons
+```
+
+## Tests
+
+```bash
+flutter analyze
+flutter test
+```
+
+## Stuck iOS build?
+
+```bash
+../scripts/ios-stop-builds.sh
+```

@@ -20,16 +20,18 @@ Default ports (see `firebase.json`):
 
 ## Flutter app
 
-Android emulator uses `10.0.2.2` as the host loopback:
+**Android emulator** uses `10.0.2.2` as the host loopback (automatic when `USE_FIREBASE_EMULATORS=true`).
+
+**iOS Simulator** uses `127.0.0.1` automatically. Do not use `10.0.2.2` on iOS.
+
+**Physical device** (Android or iPhone on Wi‑Fi): use your Mac’s LAN IP:
 
 ```bash
-cd mobile
-flutter run --flavor development \
-  --dart-define=FLAVOR=development \
-  --dart-define=USE_FIREBASE_EMULATORS=true
+flutter run --dart-define=USE_FIREBASE_EMULATORS=true \
+  --dart-define=FIREBASE_EMULATOR_HOST=192.168.x.x
 ```
 
-Physical device: use your machine's LAN IP with `--dart-define=FIREBASE_EMULATOR_HOST=192.168.x.x`.
+**iOS Maps:** copy `ios/Flutter/MapsKeys.xcconfig.example` → `MapsKeys.xcconfig` and set `MAPS_API_KEY` (Maps SDK for iOS). An empty key often crashes the app when the map loads.
 
 ## Functions
 
