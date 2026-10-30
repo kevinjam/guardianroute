@@ -57,15 +57,35 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
     }
   }
 
-  Future<void> _takePhoto() async {
-    final camera = await Permission.camera.request();
-    if (!camera.isGranted) {
-      setState(() => _error = 'Camera permission is required.');
+  Future<bool> _requestPermission(Permission permission) async {
+    var status = await permission.status;
+    if (status.isGranted || status.isLimited) {
+      return true;
+    }
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      return false;
+    }
+    status = await permission.request();
+    return status.isGranted || status.isLimited;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final permission = source == ImageSource.camera ? Permission.camera : Permission.photos;
+    final granted = await _requestPermission(permission);
+    if (!granted) {
+      final status = await permission.status;
+      setState(() {
+        _error = status.isPermanentlyDenied || status.isRestricted
+            ? 'Allow camera or photos access in Settings to attach a hazard photo.'
+            : source == ImageSource.camera
+                ? 'Camera permission is required.'
+                : 'Photo library permission is required.';
+      });
       return;
     }
 
     final file = await _picker.pickImage(
-      source: ImageSource.camera,
+      source: source,
       maxWidth: 1920,
       imageQuality: 85,
     );
@@ -77,6 +97,10 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
     }
   }
 
+  Future<void> _takePhoto() => _pickImage(ImageSource.camera);
+
+  Future<void> _chooseFromLibrary() => _pickImage(ImageSource.gallery);
+
   Future<void> _toggleRecording() async {
     if (_recording) {
       final path = await _recorder.stop();
@@ -87,9 +111,14 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
       return;
     }
 
-    final mic = await Permission.microphone.request();
-    if (!mic.isGranted) {
-      setState(() => _error = 'Microphone permission is required for voice notes.');
+    final micGranted = await _requestPermission(Permission.microphone);
+    if (!micGranted) {
+      final status = await Permission.microphone.status;
+      setState(() {
+        _error = status.isPermanentlyDenied || status.isRestricted
+            ? 'Allow microphone access in Settings to record a voice note.'
+            : 'Microphone permission is required for voice notes.';
+      });
       return;
     }
 
@@ -214,9 +243,20 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
             title: const Text('Location'),
             subtitle: Text(_locationLabel ?? 'Detecting…'),
           ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _submitting ? null : _chooseFromLibrary,
+            icon: const Icon(Icons.photo_library_outlined),
+            label: const Text('Choose photo from library'),
+          ),
           if (_error != null) ...[
             const SizedBox(height: 8),
             Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
+            if (_error!.contains('Settings'))
+              TextButton(
+                onPressed: openAppSettings,
+                child: const Text('Open Settings'),
+              ),
           ],
           const SizedBox(height: 24),
           FilledButton(

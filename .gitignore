@@ -16,7 +16,7 @@
 **/database-debug.log
 
 # Flutter / Dart
-mobile/.dart_tool/
+mobile/ios/Flutter/MapsKeys.xcconfig
 mobile/.packages
 mobile/.pub/
 mobile/.pub-cache/

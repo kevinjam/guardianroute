@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:guardianroute/features/navigation/domain/route_option.dart';
+import 'package:guardianroute/features/route_safety/domain/road_risk_level.dart';
 
 class RoutePlanRepository {
   RoutePlanRepository({FirebaseFunctions? functions})
@@ -80,10 +81,9 @@ class RoutePlanRepository {
         durationMinutes: baseMin,
         distanceKm: double.parse(baseKm.toStringAsFixed(1)),
         riskScore: 82,
-        riskLevel: 'CRITICAL',
+        riskLevel: RoadRiskLevel.critical,
         encodedPolyline: fastestPoly,
         summary: 'Direct corridor (High hazard density)',
-        criticalHazardSegments: 1,
       ),
       RouteOption(
         routeId: 'route-1',
@@ -91,10 +91,9 @@ class RoutePlanRepository {
         durationMinutes: baseMin + 2,
         distanceKm: double.parse((baseKm * 1.12).toStringAsFixed(1)),
         riskScore: 44,
-        riskLevel: 'MODERATE',
+        riskLevel: RoadRiskLevel.moderate,
         encodedPolyline: balancedPoly,
         summary: 'Northern bypass (Moderate risk)',
-        criticalHazardSegments: 0,
       ),
       RouteOption(
         routeId: 'route-2',
@@ -102,10 +101,9 @@ class RoutePlanRepository {
         durationMinutes: baseMin + 4,
         distanceKm: double.parse((baseKm * 1.22).toStringAsFixed(1)),
         riskScore: 24,
-        riskLevel: 'LOW',
+        riskLevel: RoadRiskLevel.low,
         encodedPolyline: safestPoly,
         summary: 'Protected avenue (Avoids critical potholes)',
-        criticalHazardSegments: 0,
       ),
     ];
 

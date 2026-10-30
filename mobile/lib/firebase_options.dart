@@ -48,14 +48,14 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD7TelljAQtRPH68aGW09976lsDuB4EMX4',
-    appId: '1:497717233061:ios:0000000000000000000000',
+    apiKey: 'AIzaSyAwVUJxVHrUt0NxWDzo6J90dmizJyiLoV8',
+    appId: '1:497717233061:ios:2cc4a604fe9e59765b544c',
     messagingSenderId: '497717233061',
     projectId: 'guardianangel-30dd6',
     storageBucket: 'guardianangel-30dd6.firebasestorage.app',
+    iosClientId: '497717233061-0etk0it7tsjpsapu8b9ibho7m30hjcvh.apps.googleusercontent.com',
     iosBundleId: 'com.guardianroute.guardianroute',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD7TelljAQtRPH68aGW09976lsDuB4EMX4',
     appId: '1:497717233061:ios:0000000000000000000000',
