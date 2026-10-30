@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -28,6 +29,8 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
   File? _audioFile;
   bool _recording = false;
   bool _submitting = false;
+  bool _pickingImage = false;
+  Future<PermissionStatus>? _permissionRequestInFlight;
   String? _error;
   String? _locationLabel;
 
@@ -65,35 +68,66 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
     if (status.isPermanentlyDenied || status.isRestricted) {
       return false;
     }
-    status = await permission.request();
-    return status.isGranted || status.isLimited;
+
+    if (_permissionRequestInFlight != null) {
+      await _permissionRequestInFlight;
+      status = await permission.status;
+      return status.isGranted || status.isLimited;
+    }
+
+    try {
+      _permissionRequestInFlight = permission.request();
+      status = await _permissionRequestInFlight!;
+      return status.isGranted || status.isLimited;
+    } on PlatformException catch (e) {
+      if (e.code == 'ERROR_ALREADY_REQUESTING_PERMISSIONS') {
+        status = await permission.status;
+        return status.isGranted || status.isLimited;
+      }
+      rethrow;
+    } finally {
+      _permissionRequestInFlight = null;
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final permission = source == ImageSource.camera ? Permission.camera : Permission.photos;
-    final granted = await _requestPermission(permission);
-    if (!granted) {
-      final status = await permission.status;
-      setState(() {
-        _error = status.isPermanentlyDenied || status.isRestricted
-            ? 'Allow camera or photos access in Settings to attach a hazard photo.'
-            : source == ImageSource.camera
-                ? 'Camera permission is required.'
-                : 'Photo library permission is required.';
-      });
-      return;
-    }
+    if (_pickingImage || _submitting) return;
 
-    final file = await _picker.pickImage(
-      source: source,
-      maxWidth: 1920,
-      imageQuality: 85,
-    );
-    if (file != null) {
+    setState(() {
+      _pickingImage = true;
+      _error = null;
+    });
+
+    try {
+      // image_picker requests camera/photos on iOS & Android — avoid permission_handler first.
+      final file = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        imageQuality: 85,
+      );
+      if (!mounted) return;
+      if (file != null) {
+        setState(() {
+          _imageFile = File(file.path);
+          _error = null;
+        });
+      }
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      if (e.code == 'multiple_request') {
+        return;
+      }
       setState(() {
-        _imageFile = File(file.path);
-        _error = null;
+        _error = switch (e.code) {
+          'camera_access_denied' => 'Camera permission is required.',
+          'photo_access_denied' => 'Photo library permission is required.',
+          _ => 'Could not open ${source == ImageSource.camera ? 'camera' : 'photo library'}.',
+        };
       });
+    } finally {
+      if (mounted) {
+        setState(() => _pickingImage = false);
+      }
     }
   }
 
@@ -193,7 +227,7 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
           AspectRatio(
             aspectRatio: 4 / 3,
             child: InkWell(
-              onTap: _submitting ? null : _takePhoto,
+              onTap: (_submitting || _pickingImage) ? null : _takePhoto,
               borderRadius: BorderRadius.circular(16),
               child: Ink(
                 decoration: BoxDecoration(
@@ -245,7 +279,7 @@ class _ReportHazardScreenState extends ConsumerState<ReportHazardScreen> {
           ),
           const SizedBox(height: 8),
           TextButton.icon(
-            onPressed: _submitting ? null : _chooseFromLibrary,
+            onPressed: (_submitting || _pickingImage) ? null : _chooseFromLibrary,
             icon: const Icon(Icons.photo_library_outlined),
             label: const Text('Choose photo from library'),
           ),

@@ -11,9 +11,17 @@ class LocationPermissionDenied implements Exception {
 }
 
 class LocationService {
+  Future<bool>? _ensurePermissionInFlight;
+
   Future<bool> openAppSettings() => ph.openAppSettings();
 
-  Future<bool> ensurePermission() async {
+  Future<bool> ensurePermission() {
+    return _ensurePermissionInFlight ??= _ensurePermissionOnce().whenComplete(() {
+      _ensurePermissionInFlight = null;
+    });
+  }
+
+  Future<bool> _ensurePermissionOnce() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw LocationPermissionDenied(
